@@ -56,7 +56,7 @@ asphalt.colorSpace = THREE.SRGBColorSpace;
 asphalt.wrapS = asphalt.wrapT = THREE.RepeatWrapping;
 asphalt.repeat.set(9, 150);
 asphalt.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
-renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.06;scene.add(new THREE.HemisphereLight(0xeaf6ff,0x66747b,1.35));const sun=new THREE.DirectionalLight(0xffead9,2.35);sun.position.set(-35,65,45);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-45;sun.shadow.camera.right=45;sun.shadow.camera.top=55;sun.shadow.camera.bottom=-55;sun.shadow.bias=-.0005;scene.add(sun);const mat=(c,r=.8)=>new THREE.MeshStandardMaterial({color:c,roughness:r});const ground=new THREE.Mesh(new THREE.PlaneGeometry(400,400),mat(0x668c62));ground.rotation.x=-Math.PI/2;ground.position.y=-.1;ground.receiveShadow=true;scene.add(ground);const shoulder=new THREE.Mesh(new THREE.PlaneGeometry(24,300),mat(0x50575a));shoulder.rotation.x=-Math.PI/2;shoulder.position.y=0;scene.add(shoulder);const road=new THREE.Mesh(new THREE.PlaneGeometry(18,300),new THREE.MeshStandardMaterial({map:asphalt,roughness:.96}));road.rotation.x=-Math.PI/2;road.position.y=.025;road.receiveShadow=true;scene.add(road);for(let x of [-8.3,8.3]){let edge=new THREE.Mesh(new THREE.BoxGeometry(.18,.035,300),mat(0xf2f2e9));edge.position.set(x,.06,0);scene.add(edge)}for(let z=-140;z<150;z+=10){let d=new THREE.Mesh(new THREE.BoxGeometry(.16,.035,4.3),mat(0xf5f2df));d.position.set(0,.06,z);scene.add(d)}for(let x of [-9.5,9.5]){let curb=new THREE.Mesh(new THREE.BoxGeometry(.55,.35,300),mat(0xb9b9b3));curb.position.set(x,.16,0);curb.castShadow=true;scene.add(curb);let sidewalk=new THREE.Mesh(new THREE.BoxGeometry(3,.12,300),mat(0xa9acac));sidewalk.position.set(x*1.25,.22,0);scene.add(sidewalk)}for(let z=-135;z<140;z+=24){for(let side of [-1,1]){let pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,6,8),mat(0x353a40));pole.position.set(side*12,3,z);scene.add(pole);let arm=new THREE.Mesh(new THREE.BoxGeometry(1.4,.12,.12),mat(0x353a40));arm.position.set(side*11.4,5.7,z);scene.add(arm);let lamp=new THREE.Mesh(new THREE.BoxGeometry(.5,.18,.35),mat(0xffe4a2,.4));lamp.position.set(side*10.8,5.65,z);scene.add(lamp)}}
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.02;scene.add(new THREE.HemisphereLight(0xbadcf6,0x51535e,1.18));const sun=new THREE.DirectionalLight(0xfff0de,2.55);sun.position.set(-35,65,45);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-45;sun.shadow.camera.right=45;sun.shadow.camera.top=55;sun.shadow.camera.bottom=-55;sun.shadow.bias=-.0005;scene.add(sun);const mat=(c,r=.8)=>new THREE.MeshStandardMaterial({color:c,roughness:r});const ground=new THREE.Mesh(new THREE.PlaneGeometry(400,400),mat(0x668c62));ground.rotation.x=-Math.PI/2;ground.position.y=-.1;ground.receiveShadow=true;scene.add(ground);const shoulder=new THREE.Mesh(new THREE.PlaneGeometry(24,300),mat(0x50575a));shoulder.rotation.x=-Math.PI/2;shoulder.position.y=0;scene.add(shoulder);const road=new THREE.Mesh(new THREE.PlaneGeometry(18,300),new THREE.MeshStandardMaterial({map:asphalt,color:0xd6e2f3,roughness:.92}));road.rotation.x=-Math.PI/2;road.position.y=.025;road.receiveShadow=true;scene.add(road);for(let x of [-8.3,8.3]){let edge=new THREE.Mesh(new THREE.BoxGeometry(.18,.035,300),mat(0xf2f2e9));edge.position.set(x,.06,0);scene.add(edge)}for(let z=-140;z<150;z+=10){let d=new THREE.Mesh(new THREE.BoxGeometry(.16,.035,4.3),mat(0xf5f2df));d.position.set(0,.06,z);scene.add(d)}for(let x of [-9.5,9.5]){let curb=new THREE.Mesh(new THREE.BoxGeometry(.55,.35,300),mat(0xb9b9b3));curb.position.set(x,.16,0);curb.castShadow=true;scene.add(curb);let sidewalk=new THREE.Mesh(new THREE.BoxGeometry(3,.12,300),mat(0xa9acac));sidewalk.position.set(x*1.25,.22,0);scene.add(sidewalk)}for(let z=-135;z<140;z+=24){for(let side of [-1,1]){let pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,6,8),mat(0x353a40));pole.position.set(side*12,3,z);scene.add(pole);let arm=new THREE.Mesh(new THREE.BoxGeometry(1.4,.12,.12),mat(0x353a40));arm.position.set(side*11.4,5.7,z);scene.add(arm);let lamp=new THREE.Mesh(new THREE.BoxGeometry(.5,.18,.35),mat(0xffe4a2,.4));lamp.position.set(side*10.8,5.65,z);scene.add(lamp)}}
 const windows = [];
 for (let i = 0; i < 65; i++) {
   const side = i % 2 ? 1 : -1;
@@ -90,11 +90,19 @@ const reflectionCanvas = document.createElement('canvas');
 reflectionCanvas.width = 512;
 reflectionCanvas.height = 256;
 const reflectionsContext = reflectionCanvas.getContext('2d');
-reflectionsContext.drawImage(skyCanvas,0,0);
+const reflectedSky = reflectionsContext.createLinearGradient(0,0,0,256);
+reflectedSky.addColorStop(0,'#2d639d');
+reflectedSky.addColorStop(.36,'#598eb8');
+reflectedSky.addColorStop(.50,'#bad8ea');
+reflectedSky.addColorStop(.54,'#536677');
+reflectedSky.addColorStop(.66,'#273340');
+reflectedSky.addColorStop(1,'#151e2c');
+reflectionsContext.fillStyle = reflectedSky;
+reflectionsContext.fillRect(0,0,512,256);
 for (const [x,y,width,height] of [[34,94,54,29],[153,90,72,34],[286,98,55,34],[402,89,61,35]]) {
   const highlight = reflectionsContext.createLinearGradient(x,y,x,y+height);
   highlight.addColorStop(0,'rgba(240,248,255,0)');
-  highlight.addColorStop(.45,'rgba(240,248,255,.56)');
+  highlight.addColorStop(.45,'rgba(193,223,249,.38)');
   highlight.addColorStop(1,'rgba(208,225,239,0)');
   reflectionsContext.fillStyle = highlight;
   reflectionsContext.fillRect(x,y,width,height);
@@ -107,8 +115,8 @@ const carReflection = carReflectionGenerator.fromEquirectangular(reflectionSky);
 carReflectionGenerator.dispose();
 reflectionSky.dispose();
 const paint = new THREE.MeshPhysicalMaterial({
-  color:0xaa1027, metalness:.34, roughness:.23, clearcoat:1,
-  clearcoatRoughness:.10, envMap:carReflection.texture, envMapIntensity:.83
+  color:0xbf0922, metalness:.22, roughness:.30, clearcoat:1,
+  clearcoatRoughness:.22, envMap:carReflection.texture, envMapIntensity:.78
 });
 const carbon = mat(0x171c24,.48);
 const grille = mat(0x0b1018,.85);
@@ -117,8 +125,8 @@ const metal = new THREE.MeshStandardMaterial({
 });
 const rubber = mat(0x141519,.94);
 const windowTint = new THREE.MeshPhysicalMaterial({
-  color:0x163d5f, roughness:.22, metalness:.32, clearcoat:1,
-  envMap:carReflection.texture, envMapIntensity:.65
+  color:0x10314b, roughness:.19, metalness:.46, clearcoat:1,
+  envMap:carReflection.texture, envMapIntensity:.92
 });
 const engineGlass = new THREE.MeshPhysicalMaterial({
   color:0x37688b, roughness:.18, clearcoat:1, transparent:true, opacity:.27,
@@ -196,12 +204,22 @@ const stations = [
   [2.20,.96,.70,.72,.38],
   [2.36,.76,.58,.65,.37]
 ];
-smoothSurface(stations.map(([z,w,shoulder,center,rocker]) => [
+const bodyPaint = paint.clone();
+bodyPaint.vertexColors = true;
+const body = smoothSurface(stations.map(([z,w,shoulder,center,rocker]) => [
   [-w*.90,rocker,z],[-w,.53*shoulder+.47*rocker,z],
   [-w*.91,shoulder,z],[-w*.68,shoulder-.04,z],[-w*.55,center,z],
   [0,center+.02,z],[w*.55,center,z],[w*.68,shoulder-.04,z],
   [w*.91,shoulder,z],[w,.53*shoulder+.47*rocker,z],[w*.90,rocker,z]
-]),paint);
+ ]),bodyPaint);
+const bodyPositions = body.geometry.getAttribute('position');
+const bodyShades = [];
+for (let i = 0; i < bodyPositions.count; i++) {
+  const height = bodyPositions.getY(i);
+  const shade = THREE.MathUtils.lerp(.58,1,THREE.MathUtils.smoothstep(height,.36,.99));
+  bodyShades.push(shade,shade*.98,shade);
+}
+body.geometry.setAttribute('color',new THREE.Float32BufferAttribute(bodyShades,3));
 rearPanel([[-1.05,.53],[-1.10,.83],[-.91,.99],[.91,.99],[1.10,.83],[1.05,.53]],paint,-2.37);
 const nose = rearPanel([[-.77,.35],[-.83,.56],[-.66,.66],[.66,.66],[.83,.56],[.77,.35]],paint,2.29);
 nose.rotation.y = 0;
@@ -383,23 +401,72 @@ const vehicle = new THREE.Group();
 car.rotation.y = Math.PI;
 vehicle.add(car);
 vehicle.position.set(0, 0, 8);
-// Bake the static street shadow map once and move a lightweight contact shadow with the car.
+// Project the body profile away from the same sun that lights the street.
 const shadowCanvas = document.createElement('canvas');
-shadowCanvas.width = shadowCanvas.height = 64;
+shadowCanvas.width = shadowCanvas.height = 256;
 const shadowContext = shadowCanvas.getContext('2d');
-const shadowGradient = shadowContext.createRadialGradient(32, 32, 4, 32, 32, 32);
-shadowGradient.addColorStop(0, 'rgba(0, 0, 0, 0.72)');
-shadowGradient.addColorStop(.56, 'rgba(0, 0, 0, 0.54)');
-shadowGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-shadowContext.fillStyle = shadowGradient;
-shadowContext.fillRect(0, 0, 64, 64);
-const contactShadow = new THREE.Mesh(new THREE.PlaneGeometry(4.3, 6.6), new THREE.MeshBasicMaterial({
-  map: new THREE.CanvasTexture(shadowCanvas), transparent:true, depthWrite:false, polygonOffset:true,
-  polygonOffsetFactor:-2, polygonOffsetUnits:-2
+const shadowTexture = new THREE.CanvasTexture(shadowCanvas);
+const shadowSize = 9;
+const contactShadow = new THREE.Mesh(new THREE.PlaneGeometry(shadowSize, shadowSize), new THREE.MeshBasicMaterial({
+  map:shadowTexture, transparent:true, depthWrite:false
 }));
 contactShadow.rotation.x = -Math.PI / 2;
-contactShadow.position.y = .037;
+contactShadow.position.y = .083;
 vehicle.add(contactShadow);
+
+const shadowScale = shadowCanvas.width / shadowSize;
+const sunDirection = new THREE.Vector2(-sun.position.x,-sun.position.z).divideScalar(sun.position.y);
+const shadowDirection = new THREE.Vector2();
+const shadowOrigin = new THREE.Vector2();
+let lastShadowAngle = Infinity;
+
+function drawShadowEllipse(x,z,radiusX,radiusZ,opacity) {
+  const context = shadowContext;
+  context.save();
+  context.translate(x,z);
+  context.scale(radiusX,radiusZ);
+  const fade = context.createRadialGradient(0,0,0,0,0,1);
+  fade.addColorStop(0,`rgba(6,13,23,${opacity})`);
+  fade.addColorStop(.44,`rgba(6,13,23,${opacity*.86})`);
+  fade.addColorStop(1,'rgba(6,13,23,0)');
+  context.fillStyle = fade;
+  context.fillRect(-1,-1,2,2);
+  context.restore();
+}
+
+function updateVehicleShadow() {
+  const angle = vehicle.rotation.y;
+  if (Math.abs(angle-lastShadowAngle) < .016 && angle !== 0) return;
+  if (angle === lastShadowAngle) return;
+  lastShadowAngle = angle;
+  shadowDirection.copy(sunDirection).rotateAround(shadowOrigin,angle);
+  const context = shadowContext;
+  context.clearRect(0,0,shadowCanvas.width,shadowCanvas.height);
+  context.save();
+  context.translate(shadowCanvas.width / 2,shadowCanvas.height / 2);
+  context.scale(shadowScale,shadowScale);
+  drawShadowEllipse(0,0,1.62,2.85,.46);
+  context.save();
+  context.filter = 'blur(4px)';
+  context.fillStyle = 'rgba(5,12,24,.46)';
+  context.beginPath();
+  for (const [z,width,shoulder] of stations) {
+    context.lineTo(width + shadowDirection.x*shoulder,-z + shadowDirection.y*shoulder);
+  }
+  for (let index = stations.length - 1; index >= 0; index--) {
+    const [z,width,shoulder] = stations[index];
+    context.lineTo(-width + shadowDirection.x*shoulder,-z + shadowDirection.y*shoulder);
+  }
+  context.closePath();
+  context.fill();
+  context.restore();
+  for (const wheel of wheels) {
+    drawShadowEllipse(-wheel.position.x,-wheel.position.z,.30,.44,.77);
+  }
+  context.restore();
+  shadowTexture.needsUpdate = true;
+}
+updateVehicleShadow();
 scene.add(vehicle);
 
 let speed = 0;
@@ -512,6 +579,7 @@ function animate(now) {
     frames = 0;
     fpsTime = now;
   }
+  updateVehicleShadow();
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
