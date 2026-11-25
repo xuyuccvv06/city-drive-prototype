@@ -401,72 +401,37 @@ const vehicle = new THREE.Group();
 car.rotation.y = Math.PI;
 vehicle.add(car);
 vehicle.position.set(0, 0, 8);
-// Project the body profile away from the same sun that lights the street.
+// Ambient contact shading keeps the car grounded in diffuse daylight.
 const shadowCanvas = document.createElement('canvas');
-shadowCanvas.width = shadowCanvas.height = 256;
+shadowCanvas.width = shadowCanvas.height = 192;
 const shadowContext = shadowCanvas.getContext('2d');
-const shadowTexture = new THREE.CanvasTexture(shadowCanvas);
-const shadowSize = 9;
-const contactShadow = new THREE.Mesh(new THREE.PlaneGeometry(shadowSize, shadowSize), new THREE.MeshBasicMaterial({
-  map:shadowTexture, transparent:true, depthWrite:false
+const shadowSize = 6;
+shadowContext.translate(shadowCanvas.width / 2,shadowCanvas.height / 2);
+shadowContext.scale(shadowCanvas.width / shadowSize,shadowCanvas.height / shadowSize);
+
+function drawContact(x,z,radiusX,radiusZ,opacity) {
+  shadowContext.save();
+  shadowContext.translate(x,z);
+  shadowContext.scale(radiusX,radiusZ);
+  const fade = shadowContext.createRadialGradient(0,0,0,0,0,1);
+  fade.addColorStop(0,`rgba(0,0,0,${opacity})`);
+  fade.addColorStop(.57,`rgba(0,0,0,${opacity*.55})`);
+  fade.addColorStop(1,'rgba(0,0,0,0)');
+  shadowContext.fillStyle = fade;
+  shadowContext.fillRect(-1,-1,2,2);
+  shadowContext.restore();
+}
+
+drawContact(0,.05,1.29,2.51,.40);
+for (const wheel of wheels) {
+  drawContact(-wheel.position.x,-wheel.position.z,.26,.37,.59);
+}
+const contactShadow = new THREE.Mesh(new THREE.PlaneGeometry(shadowSize,shadowSize),new THREE.MeshBasicMaterial({
+  map:new THREE.CanvasTexture(shadowCanvas), transparent:true, depthWrite:false, toneMapped:false
 }));
 contactShadow.rotation.x = -Math.PI / 2;
 contactShadow.position.y = .083;
 vehicle.add(contactShadow);
-
-const shadowScale = shadowCanvas.width / shadowSize;
-const sunDirection = new THREE.Vector2(-sun.position.x,-sun.position.z).divideScalar(sun.position.y);
-const shadowDirection = new THREE.Vector2();
-const shadowOrigin = new THREE.Vector2();
-let lastShadowAngle = Infinity;
-
-function drawShadowEllipse(x,z,radiusX,radiusZ,opacity) {
-  const context = shadowContext;
-  context.save();
-  context.translate(x,z);
-  context.scale(radiusX,radiusZ);
-  const fade = context.createRadialGradient(0,0,0,0,0,1);
-  fade.addColorStop(0,`rgba(6,13,23,${opacity})`);
-  fade.addColorStop(.44,`rgba(6,13,23,${opacity*.86})`);
-  fade.addColorStop(1,'rgba(6,13,23,0)');
-  context.fillStyle = fade;
-  context.fillRect(-1,-1,2,2);
-  context.restore();
-}
-
-function updateVehicleShadow() {
-  const angle = vehicle.rotation.y;
-  if (Math.abs(angle-lastShadowAngle) < .016 && angle !== 0) return;
-  if (angle === lastShadowAngle) return;
-  lastShadowAngle = angle;
-  shadowDirection.copy(sunDirection).rotateAround(shadowOrigin,angle);
-  const context = shadowContext;
-  context.clearRect(0,0,shadowCanvas.width,shadowCanvas.height);
-  context.save();
-  context.translate(shadowCanvas.width / 2,shadowCanvas.height / 2);
-  context.scale(shadowScale,shadowScale);
-  drawShadowEllipse(0,0,1.62,2.85,.46);
-  context.save();
-  context.filter = 'blur(4px)';
-  context.fillStyle = 'rgba(5,12,24,.46)';
-  context.beginPath();
-  for (const [z,width,shoulder] of stations) {
-    context.lineTo(width + shadowDirection.x*shoulder,-z + shadowDirection.y*shoulder);
-  }
-  for (let index = stations.length - 1; index >= 0; index--) {
-    const [z,width,shoulder] = stations[index];
-    context.lineTo(-width + shadowDirection.x*shoulder,-z + shadowDirection.y*shoulder);
-  }
-  context.closePath();
-  context.fill();
-  context.restore();
-  for (const wheel of wheels) {
-    drawShadowEllipse(-wheel.position.x,-wheel.position.z,.30,.44,.77);
-  }
-  context.restore();
-  shadowTexture.needsUpdate = true;
-}
-updateVehicleShadow();
 scene.add(vehicle);
 
 let speed = 0;
@@ -579,7 +544,6 @@ function animate(now) {
     frames = 0;
     fpsTime = now;
   }
-  updateVehicleShadow();
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
