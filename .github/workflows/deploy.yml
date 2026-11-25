@@ -15,7 +15,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.retry.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -50,6 +50,16 @@ jobs:
           exit 1
       - name: Deploy
         id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: pages-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Allow time for Pages artifact propagation
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 15
+      - name: Retry Pages deployment
+        if: steps.deployment.outcome == 'failure'
+        id: retry
         uses: actions/deploy-pages@v4
         with:
           artifact_name: pages-${{ github.run_id }}-${{ github.run_attempt }}
