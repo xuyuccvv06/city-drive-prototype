@@ -31,11 +31,11 @@ def material(name, color, metal=0, rough=.35, coat=0, emission=0):
     return mat
 
 
-paint = material("01 • Satin titanium", (.135,.162,.193), .68,.31,.45)
+paint = material("01 • Satin titanium", (.17,.185,.201), .57,.34,.26)
 lip = material("02 • Smoked titanium", (.085,.11,.14), .72,.31)
 carbon = material("03 • Twill carbon", (.04,.046,.055), .24,.33,.38)
 rubber = material("04 • Tire rubber", (.014,.016,.019), .02,.64)
-glass = material("05 • Smoked canopy", (.011,.020,.03), .39,.18,.68)
+glass = material("05 • Smoked canopy", (.012,.021,.03), .24,.24,.52)
 metal = material("06 • Machined alloy", (.33,.37,.41), .89,.24)
 rotor = material("07 • Carbon ceramic", (.18,.19,.20), .53,.42)
 black = material("08 • Duct recess", (.012,.016,.019), .1,.78)
@@ -119,6 +119,13 @@ def loft(name, rows, mat, steps=4):
     return mesh(name,verts,faces,mat,uv=uv)
 
 
+def crease(object, radians=.42):
+    modifier = object.modifiers.new('Preserve panel creases','EDGE_SPLIT')
+    modifier.split_angle = radians
+    modifier.use_edge_sharp = False
+    return object
+
+
 def plate(name, outline, offset, mat, bevel=.009):
     n = len(outline)
     verts = outline + [tuple(Vector(v)+Vector(offset)) for v in outline]
@@ -156,9 +163,11 @@ sections = [
     (.57,.51,.72,.36),(1.02,.41,.56,.25),(1.62,.34,.44,.20),
     (2.07,.32,.34,.17),(2.35,.25,.28,.15)
 ]
-loft('Center monocoque and nose', [[(-w,y,b),(-w,y,z-.075),(-w*.75,y,z),
-    (-w*.33,y,z+.015),(0,y,z+.021),(w*.33,y,z+.015),(w*.75,y,z),
-    (w,y,z-.075),(w,y,b)] for y,w,z,b in sections], paint)
+crease(loft('Chiseled center monocoque and nose', [[
+    (-w,y,b),(-w,y,z-.13),(-w*.80,y,z-.064),(-w*.34,y,z+.012),
+    (-w*.08,y,z+.043),(0,y,z+.049),(w*.08,y,z+.043),(w*.34,y,z+.012),
+    (w*.80,y,z-.064),(w,y,z-.13),(w,y,b)
+] for y,w,z,b in sections], paint))
 
 fender_stations = [
     (-2.35,.69,.96,.50,.705),(-2.15,.67,1.02,.47,.80),
@@ -181,11 +190,18 @@ for side in (-1,1):
             bottom = max(.31,arch)
         elif distance < .52:
             bottom = .31 + (.52-distance)/.12 * .045
-        points = [(inner,bottom*.73),(inner,top-.115),(inner+.06,top-.027),
-                  ((inner+outer)*.5,top),(outer-.075,top-.023),
-                  (outer-.018,top-.092),(outer,bottom+.035),(outer-.035,bottom),(inner+.06,bottom*.74)]
+        span = outer-inner
+        points = [(inner,bottom*.72),(inner+.018,top-.22),
+                  (inner+span*.38,top-.015),(outer-.079,top),
+                  (outer-.036,top-.047),(outer,top-.129),
+                  (outer-.011,bottom+.057),(outer-.059,bottom),(inner+.048,bottom*.72)]
         rows.append([(side*x,y,z) for x,z in points])
-    loft(f'{S} continuous sculpted fender',rows,paint,1)
+    crease(loft(f'{S} angular shoulder and wheel arch',rows,paint,1),.35)
+    # A dark, inset upper extraction slit follows the angled shoulder.
+    plate(f'{S} upper front extraction',[(side*.71,1.83,.742),(side*.856,1.77,.801),
+        (side*.904,1.54,.844),(side*.79,1.59,.819)],(0,0,-.028),black,.008)
+    plate(f'{S} upper rear extraction',[(side*.685,-1.00,.841),(side*.783,-1.085,.88),
+        (side*.827,-1.38,.946),(side*.729,-1.29,.922)],(0,0,-.026),black,.008)
     plate(f'{S} side airfoil',[(side*.50,-.94,.39),(side*.89,-.68,.385),
         (side*.953,-.10,.426),(side*.82,.56,.45),(side*.67,.75,.41)],(0,0,-.05),carbon,.011)
 
@@ -244,16 +260,20 @@ for side in (-1,1):
             (side*(x+.061),1.91,.40),(side*(x+.021),1.91,.15)],(side*.025,0,0),lip,.007)
 
     # Formed rear ducts and diffuser straps with open, dark passages.
-    plate(f'{S} rear shoulder fin',[(side*.55,-2.34,.575),(side*.98,-2.34,.59),
-        (side*.93,-2.19,.73),(side*.72,-2.03,.72)],(0,-.025,-.049),paint)
-    plate(f'{S} rear extraction channel',[(side*.16,-2.39,.24),(side*.97,-2.39,.23),
-        (side*.98,-2.38,.52),(side*.51,-2.36,.54)],(0,.055,.015),black)
-    plate(f'{S} undercut extraction exit',[(side*.49,-2.382,.326),(side*.87,-2.4,.328),
-        (side*.867,-2.406,.463),(side*.62,-2.397,.468)],(0,.023,0),carbon,.012)
+    # The louvres sit in front of a closed structural bulkhead.
+    plate(f'{S} rear buttress shroud',[(side*.44,-2.341,.565),(side*.68,-2.375,.728),
+        (side*.92,-2.348,.747),(side*1.017,-2.335,.62),(side*.995,-2.373,.394),
+        (side*.876,-2.389,.38),(side*.74,-2.387,.552)],(0,.072,0),paint,.014)
+    plate(f'{S} sculpted diffuser tunnel surround',[(side*.165,-2.415,.149),
+        (side*.321,-2.428,.355),(side*.54,-2.432,.421),(side*.745,-2.422,.369),
+        (side*.982,-2.405,.148),(side*.882,-2.429,.153),(side*.68,-2.447,.303),
+        (side*.457,-2.446,.309),(side*.25,-2.441,.15)],(0,.062,0),carbon,.012)
+    plate(f'{S} recessed rear outlet',[(side*.519,-2.405,.431),(side*.849,-2.403,.442),
+        (side*.913,-2.39,.582),(side*.613,-2.383,.586)],(0,.031,0),black,.010)
     for i in range(4):
-        z = .35+i*.022
-        line(f'{S} rear outlet louvre {i}',[(side*.59,-2.403,z),(side*.72,-2.409,z+.005),
-             (side*.856,-2.413,z+.002)],.005,lip)
+        z = .461+i*.029
+        line(f'{S} rear outlet louvre {i}',[(side*.616,-2.416,z),(side*.72,-2.42,z+.005),
+             (side*.854,-2.413,z+.004)],.007,lip)
     for i in range(3):
         x = side*(.33+i*.255)
         plate(f'{S} diffuser strake {i}',[(x,-2.37,.128),(x,-1.32,.114),
@@ -265,6 +285,20 @@ for side in (-1,1):
         trunk = [(x,-2.384,.387),(x,-2.387,.526),(x,-2.357,.671)]
         line(f'{S} tail lamp recess {i}',trunk,.036,black)
         line(f'{S} vertical tail optic {i}',[(px,py-.028,pz) for px,py,pz in trunk],.014,tail)
+
+# Closed rear fascia spans both wheels and the floor. Air outlets have visible back walls.
+rear = [
+    (-.98,-2.32,.154),(-1.008,-2.325,.46),(-.937,-2.31,.704),
+    (-.68,-2.305,.755),(-.41,-2.34,.722),(0,-2.351,.684),
+    (.41,-2.34,.722),(.68,-2.305,.755),(.937,-2.31,.704),
+    (1.008,-2.325,.46),(.98,-2.32,.154)
+]
+plate('Closed rear crash structure',rear,(0,.25,0),black,.014)
+plate('Satin center rear keel',[(0,-2.427,.154),(-.225,-2.403,.173),(-.166,-2.413,.456),
+      (-.27,-2.398,.624),(0,-2.42,.688),(.27,-2.398,.624),(.166,-2.413,.456),
+      (.225,-2.403,.173)],(0,.105,0),lip,.015)
+plate('Rear diffuser floor closure',[(-1.01,-2.386,.115),(1.01,-2.386,.115),
+      (.95,-1.83,.108),(-.95,-1.83,.108)],(0,0,-.027),carbon,.006)
 
 # Wheel pod and floor shapes leave a line of sight through the side channels.
 plate('Carbon undertray', [(-.95,-2.37,.12),(.95,-2.37,.12),
@@ -284,7 +318,7 @@ def canopy_rows(profile, low=.62):
 profile = [(-1.61,.13,.79,.73),(-1.43,.28,.89,.74),(-1.10,.40,1.055,.759),
            (-.75,.44,1.13,.78),(-.34,.45,1.105,.78),(.03,.415,1.017,.752),
            (.36,.35,.901,.706),(.65,.275,.77,.664),(.86,.15,.657,.619)]
-loft('Laminated canopy glazing',canopy_rows(profile),glass,6)
+crease(loft('Laminated canopy glazing',canopy_rows(profile),glass,6),.34)
 for side in (-1,1):
     line('Canopy satin frame',[(side*w,y,base+.009) for y,w,z,base in profile],.018,lip)
     line('Canopy A pillar',[(side*.29,.56,.699),(side*.34,.38,.788),
@@ -399,7 +433,10 @@ for side in (-1,1):
 for x in (-.39,.39):
     pipe = wheel_lathe('Exhaust lip',0,0,0,[(-.085,.062),(.08,.062),(.085,.083),(.07,.091),(-.085,.087)],metal)
     pipe.rotation_euler.z = pi/2
-    pipe.location = (x,-2.28,.55)
+    pipe.location = (x,-2.29,.619)
+    cap = wheel_lathe('Dark exhaust backwall',0,0,0,[(-.018,.001),(-.018,.062),(.014,.062),(.014,.001)],black)
+    cap.rotation_euler.z = pi/2
+    cap.location = (x,-2.31,.619)
 
 # Save editable Blender data before adding the temporary rendering rig.
 for obj in list(root.children):

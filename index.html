@@ -30,7 +30,7 @@ try {
   const renderer = new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.23;
+  renderer.toneMappingExposure = 1.14;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate = false;
@@ -100,7 +100,7 @@ try {
   const wall = new THREE.MeshStandardMaterial({color:0x444950,roughness:.85});
   const baseboard = new THREE.MeshStandardMaterial({color:0x272b30,roughness:.8});
   const ceiling = new THREE.MeshStandardMaterial({color:0x343a44,roughness:.94,emissive:0x20252d,emissiveIntensity:.7});
-  const fixtures = new THREE.MeshBasicMaterial({color:0xdcecff,toneMapped:false});
+  const fixtures = new THREE.MeshBasicMaterial({color:0xb8c7da});
   function block(material,sizes,position,parent=scene) {
     const object = new THREE.Mesh(new THREE.BoxGeometry(...sizes),material);
     object.position.set(...position);
@@ -120,13 +120,13 @@ try {
       block(baseboard,[.22,4.1,.12],[aligned,2.18,side*10.30]);
       block(baseboard,[.12,4.1,.22],[side*10.30,2.18,aligned]);
     }
-    block(fixtures,[.26,.045,7.6],[side*2.55,4.08,0]);
+    block(fixtures,[.15,.026,6.4],[side*3.9,4.23,0]);
   }
 
   // A studio reflection rig is rendered once into prefiltered lighting.
   const reflect = new THREE.Scene();
   reflect.background = new THREE.Color(.115,.133,.165);
-  const whitePanel = new THREE.MeshBasicMaterial({color:new THREE.Color(3.6,3.75,4.05)});
+  const whitePanel = new THREE.MeshBasicMaterial({color:new THREE.Color(2.62,2.8,3.12)});
   const warmPanel = new THREE.MeshBasicMaterial({color:new THREE.Color(2.15,1.91,1.66)});
   block(whitePanel,[.74,.035,7.4],[-2.2,3.5,0],reflect);
   block(whitePanel,[.96,.035,7.4],[2.0,3.8,0],reflect);
@@ -169,7 +169,7 @@ try {
   contact.position.y=.006;
   scene.add(contact);
 
-  const model = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync('./assets/onyx.glb?v=1');
+  const model = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync('./assets/onyx.glb?v=2');
   const bounds = new THREE.Box3().setFromObject(model.scene);
   if (bounds.isEmpty()) throw new Error('GLB has no visible geometry');
   const center = bounds.getCenter(new THREE.Vector3());
