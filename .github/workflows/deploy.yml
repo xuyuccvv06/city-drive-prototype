@@ -35,6 +35,9 @@ jobs:
           mkdir -p _site/r03-preview
           cp r03-preview/index.html _site/r03-preview/
           test -s _site/r03-preview/index.html
+          mkdir -p _site/quality-preview
+          cp quality-preview/index.html _site/quality-preview/
+          test -s _site/quality-preview/index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
