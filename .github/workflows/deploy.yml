@@ -32,6 +32,9 @@ jobs:
           cp index.html _site/
           mkdir _site/assets
           cp assets/onyx.glb _site/assets/
+          mkdir -p _site/r03-preview
+          cp r03-preview/index.html _site/r03-preview/
+          test -s _site/r03-preview/index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
